@@ -321,7 +321,7 @@ function Footer({ schedule, t, lang }) {
 ══════════════════════════════════════ */
 
 /* ── HOME ── */
-function HomePage({ setPage, schedule, t, lang }) {
+function HomePage({ setPage, schedule, gallery, t, lang }) {
   const todayKey = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"][new Date().getDay()];
   const todayS = schedule[todayKey];
   return (
@@ -357,6 +357,41 @@ function HomePage({ setPage, schedule, t, lang }) {
           </div>
         ))}
       </div>
+      {/* Gallery preview */}
+      {(() => {
+        const visibleGal = gallery.filter(g => g.visible).slice(0, 4);
+        if (visibleGal.length === 0) return null;
+        return (
+          <div style={{ maxWidth: 1140, margin: "0 auto 64px", padding: "0 20px" }}>
+            <div style={{ textAlign: "center", marginBottom: 36 }}>
+              <Tag>{t.gallery.tag}</Tag>
+              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(26px,4vw,38px)", color: C.blue900 }}>{t.gallery.title}</h2>
+              <div style={{ width: 48, height: 3, background: C.blue500, margin: "14px auto 0", borderRadius: 2 }} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16 }}>
+              {visibleGal.map(img => (
+                <div key={img._id} className="card-hover" style={{ overflow: "hidden", borderRadius: 10, border: `1px solid ${C.gray200}`, cursor: "pointer" }} onClick={() => setPage("galería")}>
+                  <img src={img.url} alt={lang === "es" ? img.caption_es : img.caption_en} style={{ width: "100%", height: 200, objectFit: "cover", display: "block", transition: "transform .3s" }}
+                    onMouseOver={e => e.target.style.transform = "scale(1.04)"}
+                    onMouseOut={e => e.target.style.transform = "scale(1)"}
+                    onError={e => { e.target.style.minHeight = "200px"; e.target.style.background = C.blue50; }} />
+                  <div style={{ padding: "10px 14px", background: C.white }}>
+                    <p style={{ fontSize: 13, color: C.gray600 }}>{lang === "es" ? img.caption_es : img.caption_en}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {gallery.filter(g => g.visible).length > 4 && (
+              <div style={{ textAlign: "center", marginTop: 24 }}>
+                <BtnOutline onClick={() => setPage("galería")} style={{ fontSize: 14, padding: "11px 28px" }}>
+                  {lang === "es" ? "Ver toda la galería" : "See full gallery"} →
+                </BtnOutline>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       <div style={{ background: C.blue50, borderTop: `1px solid ${C.blue100}`, borderBottom: `1px solid ${C.blue100}`, padding: "48px 24px", textAlign: "center" }}>
         <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(26px,4vw,38px)", color: C.blue900, marginBottom: 10 }}>
           {lang === "es" ? "¿Qué necesitas hoy?" : "What do you need today?"}
@@ -956,7 +991,7 @@ export default function App() {
       <style>{css}</style>
       <Navbar page={page} setPage={setPage} lang={lang} setLang={setLang} t={t} />
       <main style={{ minHeight: "calc(100vh - 62px)" }}>
-        {page === "inicio"    && <HomePage    setPage={setPage} schedule={schedule} t={t} lang={lang} />}
+        {page === "inicio"    && <HomePage    setPage={setPage} schedule={schedule} gallery={gallery} t={t} lang={lang} />}
         {page === "catálogo"  && <CatalogPage catalog={catalog} t={t} lang={lang} />}
         {page === "galería"   && <GalleryPage gallery={gallery} t={t} lang={lang} />}
         {page === "contacto"  && <ContactPage onSend={sendMessage} t={t} />}
