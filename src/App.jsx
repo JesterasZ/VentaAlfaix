@@ -228,8 +228,8 @@ function Navbar({ page, setPage, lang, setLang, t }) {
         <div onClick={() => setPage("inicio")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 36, height: 36, background: C.blue700, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🛒</div>
           <div>
-            <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: C.blue900, lineHeight: 1 }}>MiTienda</div>
-            <div style={{ fontSize: 9, color: C.gray400, letterSpacing: 2, textTransform: "uppercase" }}>Supermercado local</div>
+            <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, fontSize: 17, color: C.blue900, lineHeight: 1 }}>La Venta De Alfaix</div>
+            <div style={{ fontSize: 9, color: C.gray400, letterSpacing: 2, textTransform: "uppercase" }}>Village Storage</div>
           </div>
         </div>
         <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -283,7 +283,7 @@ function Footer({ schedule, t, lang }) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <div style={{ width: 32, height: 32, background: C.blue700, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🛒</div>
-            <span style={{ fontFamily: "'Fraunces', serif", color: C.white, fontSize: 18, fontWeight: 700 }}>MiTienda</span>
+            <span style={{ fontFamily: "'Fraunces', serif", color: C.white, fontSize: 18, fontWeight: 700 }}>La Venta De Alfaix</span>
           </div>
           <p style={{ fontSize: 13, lineHeight: 1.7, color: C.blue300 }}>{t.footer.desc}</p>
         </div>
@@ -310,7 +310,7 @@ function Footer({ schedule, t, lang }) {
         </div>
       </div>
       <div style={{ borderTop: `1px solid rgba(255,255,255,.08)`, marginTop: 36, paddingTop: 18, textAlign: "center", fontSize: 12, color: C.blue300, letterSpacing: .5 }}>
-        © {new Date().getFullYear()} MiTienda — {t.footer.rights}
+        © {new Date().getFullYear()} La Venta De Alfaix — {t.footer.rights}
       </div>
     </footer>
   );
@@ -842,7 +842,7 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
    APP PRINCIPAL
 ══════════════════════════════════════ */
 export default function App() {
-  const [lang, setLang] = useState("es");
+  const [lang, setLang] = useState("en");
   const [page, setPage] = useState("inicio");
   const [adminAuth, setAdminAuth] = useState(false);
   const [loading, setLoading] = useState(true);
