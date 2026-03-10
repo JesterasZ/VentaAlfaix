@@ -65,6 +65,7 @@ const T = {
         title: "Gestión de Galería", addTitle: "Añadir imagen",
         urlPh: "URL de la imagen (https://...)", captionPh: "Descripción (opcional)", add: "+ Añadir",
         hide: "Ocultar", show: "Mostrar", empty: "No hay imágenes.",
+        edit: "Editar", save: "Guardar", cancel: "Cancelar", featured: "Inicio", notFeatured: "No en inicio",
       },
       sched: {
         title: "Horario de apertura", saved: "✓ Guardado", save: "Guardar horario",
@@ -129,6 +130,7 @@ const T = {
         title: "Gallery management", addTitle: "Add image",
         urlPh: "Image URL (https://...)", captionPh: "Description (optional)", add: "+ Add",
         hide: "Hide", show: "Show", empty: "No images.",
+        edit: "Edit", save: "Save", cancel: "Cancel", featured: "Homepage", notFeatured: "Not on homepage",
       },
       sched: {
         title: "Opening hours", saved: "✓ Saved", save: "Save schedule",
@@ -359,7 +361,7 @@ function HomePage({ setPage, schedule, gallery, t, lang }) {
       </div>
       {/* Gallery preview */}
       {(() => {
-        const visibleGal = gallery.filter(g => g.visible).slice(0, 4);
+        const visibleGal = gallery.filter(g => g.visible && g.featured);
         if (visibleGal.length === 0) return null;
         return (
           <div style={{ maxWidth: 1140, margin: "0 auto 64px", padding: "0 20px" }}>
@@ -381,7 +383,7 @@ function HomePage({ setPage, schedule, gallery, t, lang }) {
                 </div>
               ))}
             </div>
-            {gallery.filter(g => g.visible).length > 4 && (
+            {gallery.filter(g => g.visible).length > visibleGal.length && (
               <div style={{ textAlign: "center", marginTop: 24 }}>
                 <BtnOutline onClick={() => setPage("galería")} style={{ fontSize: 14, padding: "11px 28px" }}>
                   {lang === "es" ? "Ver toda la galería" : "See full gallery"} →
@@ -547,13 +549,15 @@ function ContactPage({ onSend, t }) {
 /* ══════════════════════════════════════
    ADMIN PANEL
 ══════════════════════════════════════ */
-function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCatalog, schedule, setSchedule, onClose, t, lang, refreshData }) {
+function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCatalog, schedule, setSchedule, onClose, t, lang, setLang, refreshData }) {
   const [tab, setTab] = useState("products");
 
   // --- Gallery state ---
   const [newUrl, setNewUrl] = useState("");
   const [newCapEs, setNewCapEs] = useState("");
   const [newCapEn, setNewCapEn] = useState("");
+  const [editGalId, setEditGalId] = useState(null);
+  const [editGal, setEditGal] = useState({});
 
   // --- Schedule state ---
   const [schedEdit, setSchedEdit] = useState(JSON.parse(JSON.stringify(schedule)));
@@ -565,7 +569,7 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
   const [editingId, setEditingId] = useState(null);
   const [editProd, setEditProd] = useState({});
 
-  const unread = messages.filter(m => !m.read && !m.hidden).length;
+  const unread = messages.filter(m => !m.read).length;
 
   useEffect(() => {
     setSchedEdit(JSON.parse(JSON.stringify(schedule)));
@@ -605,6 +609,23 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
   const deleteGallery = async (id) => {
     await api(`/api/gallery?id=${id}`, { method: "DELETE" });
     setGallery(g => g.filter(i => i._id !== id));
+  };
+
+  const toggleGalleryFeatured = async (img) => {
+    const updated = await api(`/api/gallery?id=${img._id}`, { method: "PUT", body: { featured: !img.featured } });
+    setGallery(g => g.map(i => i._id === img._id ? updated : i));
+  };
+
+  const startEditGal = (img) => {
+    setEditGalId(img._id);
+    setEditGal({ url: img.url, caption_es: img.caption_es, caption_en: img.caption_en });
+  };
+
+  const saveEditGal = async () => {
+    const updated = await api(`/api/gallery?id=${editGalId}`, { method: "PUT", body: editGal });
+    setGallery(g => g.map(i => i._id === editGalId ? updated : i));
+    setEditGalId(null);
+    setEditGal({});
   };
 
   const toggleMsgRead = async (msg) => {
@@ -663,7 +684,15 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
             <h2 style={{ fontFamily: "'Fraunces', serif", color: C.white, fontSize: 22 }}>{t.admin.title}</h2>
             <p style={{ fontSize: 12, color: C.blue300 }}>{t.admin.subtitle}</p>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,.1)", border: "none", color: C.white, width: 36, height: 36, borderRadius: 8, fontSize: 16 }}>✕</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={() => setLang(l => l === "es" ? "en" : "es")} style={{
+              background: "rgba(255,255,255,.15)", border: "none", borderRadius: 20, padding: "6px 14px", fontSize: 13,
+              color: C.white, fontWeight: 500, display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+            }}>
+              <span>{t.flag}</span> {t.switchLang}
+            </button>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,.1)", border: "none", color: C.white, width: 36, height: 36, borderRadius: 8, fontSize: 16 }}>✕</button>
+          </div>
         </div>
         {/* Tabs */}
         <div style={{ display: "flex", gap: 10, padding: "14px 24px", background: C.white, borderBottom: `1px solid ${C.gray200}`, flexWrap: "wrap" }}>
@@ -757,22 +786,21 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, color: C.blue900 }}>{t.admin.msg.title}</h3>
-                <span style={{ fontSize: 12, color: C.gray400 }}>{messages.filter(m=>!m.hidden).length} {t.admin.msg.visible} · {unread} {t.admin.msg.unread}</span>
+                <span style={{ fontSize: 12, color: C.gray400 }}>{messages.length} {t.admin.msg.visible} · {unread} {t.admin.msg.unread}</span>
               </div>
               {messages.length === 0 && <p style={{ color: C.gray400, textAlign: "center", padding: 40 }}>{t.admin.msg.empty}</p>}
               {messages.map(msg => (
                 <div key={msg._id} style={{
-                  background: msg.hidden ? C.gray100 : msg.read ? C.white : "#EFF6FF",
-                  border: `1px solid ${msg.hidden ? C.gray200 : msg.read ? C.gray200 : C.blue300}`,
-                  borderLeft: `4px solid ${msg.hidden ? C.gray200 : msg.read ? C.gray200 : C.blue500}`,
-                  borderRadius: 10, padding: 18, marginBottom: 12, opacity: msg.hidden ? .6 : 1,
+                  background: msg.read ? C.white : "#EFF6FF",
+                  border: `1px solid ${msg.read ? C.gray200 : C.blue300}`,
+                  borderLeft: `4px solid ${msg.read ? C.gray200 : C.blue500}`,
+                  borderRadius: 10, padding: 18, marginBottom: 12,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 600, color: C.gray800, fontSize: 15 }}>{msg.name}</span>
                       {msg.phone && <span style={{ fontSize: 12, color: C.gray400 }}>📞 {msg.phone}</span>}
-                      {!msg.read && !msg.hidden && <span style={{ background: C.blue700, color: C.white, fontSize: 10, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>{t.admin.msg.new}</span>}
-                      {msg.hidden && <span style={{ background: C.gray200, color: C.gray600, fontSize: 10, padding: "2px 8px", borderRadius: 10 }}>{t.admin.msg.hidden}</span>}
+                      {!msg.read && <span style={{ background: C.blue700, color: C.white, fontSize: 10, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>{t.admin.msg.new}</span>}
                     </div>
                     <span style={{ fontSize: 12, color: C.gray400 }}>{new Date(msg.createdAt).toLocaleDateString("es-ES")}</span>
                   </div>
@@ -782,10 +810,6 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
                     <button onClick={() => toggleMsgRead(msg)}
                       style={{ background: !msg.read ? "#F0FFF4" : C.gray100, color: !msg.read ? C.green : C.gray600, border: `1px solid ${!msg.read ? "#86EFAC" : C.gray200}`, padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 500 }}>
                       {!msg.read ? t.admin.msg.markRead : t.admin.msg.markUnread}
-                    </button>
-                    <button onClick={() => toggleMsgHidden(msg)}
-                      style={{ background: msg.hidden ? "#F0FFF4" : "#FEF2F2", color: msg.hidden ? C.green : C.red, border: `1px solid ${msg.hidden ? "#86EFAC" : "#FECACA"}`, padding: "6px 14px", borderRadius: 6, fontSize: 12 }}>
-                      {msg.hidden ? t.admin.msg.show : t.admin.msg.hide}
                     </button>
                     <button onClick={() => deleteMsg(msg._id)}
                       style={{ background: "#FEF2F2", color: C.red, border: `1px solid #FECACA`, padding: "6px 12px", borderRadius: 6, fontSize: 12, marginLeft: "auto" }}>{t.admin.msg.delete}</button>
@@ -810,21 +834,43 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
                   <BtnPrimary onClick={addImg} style={{ alignSelf: "flex-start", padding: "9px 20px" }}>{t.admin.gal.add}</BtnPrimary>
                 </div>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(170px,1fr))", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 14 }}>
                 {gallery.map(img => (
                   <div key={img._id} style={{ border: `1.5px solid ${img.visible ? C.gray200 : C.gray100}`, borderRadius: 10, overflow: "hidden", opacity: img.visible ? 1 : .5 }}>
-                    <img src={img.url} alt="" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} onError={e => { e.target.style.background = C.blue50; e.target.style.height = "120px"; }} />
+                    <img src={editGalId === img._id ? editGal.url : img.url} alt="" style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} onError={e => { e.target.style.background = C.blue50; e.target.style.height = "140px"; }} />
                     <div style={{ padding: "10px 12px" }}>
-                      <p style={{ fontSize: 11, color: C.gray600, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🇪🇸 {img.caption_es}</p>
-                      <p style={{ fontSize: 11, color: C.gray400, marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🇬🇧 {img.caption_en}</p>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button onClick={() => toggleGalleryVisible(img)}
-                          style={{ flex:1, background: img.visible ? "#FEF2F2" : "#F0FFF4", border:"none", color: img.visible ? C.red : C.green, padding:"5px", borderRadius:5, fontSize:11, fontWeight:500 }}>
-                          {img.visible ? t.admin.gal.hide : t.admin.gal.show}
-                        </button>
-                        <button onClick={() => deleteGallery(img._id)}
-                          style={{ background:"#FEF2F2", border:"none", color:C.red, padding:"5px 8px", borderRadius:5, fontSize:11 }}>🗑</button>
-                      </div>
+                      {editGalId === img._id ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <input value={editGal.url} onChange={e => setEditGal(eg => ({...eg, url: e.target.value}))} placeholder="URL" style={{ fontSize: 11, padding: "6px 8px" }} />
+                          <input value={editGal.caption_es} onChange={e => setEditGal(eg => ({...eg, caption_es: e.target.value}))} placeholder="🇪🇸 Descripción" style={{ fontSize: 11, padding: "6px 8px" }} />
+                          <input value={editGal.caption_en} onChange={e => setEditGal(eg => ({...eg, caption_en: e.target.value}))} placeholder="🇬🇧 Caption" style={{ fontSize: 11, padding: "6px 8px" }} />
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button onClick={saveEditGal} style={{ flex:1, background: C.blue700, border:"none", color:C.white, padding:"5px", borderRadius:5, fontSize:11, fontWeight:500 }}>{t.admin.gal.save}</button>
+                            <button onClick={() => setEditGalId(null)} style={{ flex:1, background: C.gray100, border:"none", color:C.gray600, padding:"5px", borderRadius:5, fontSize:11 }}>{t.admin.gal.cancel}</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p style={{ fontSize: 11, color: C.gray600, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🇪🇸 {img.caption_es}</p>
+                          <p style={{ fontSize: 11, color: C.gray400, marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>🇬🇧 {img.caption_en}</p>
+                          <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                            <button onClick={() => toggleGalleryFeatured(img)}
+                              style={{ flex:1, background: img.featured ? C.blue100 : C.gray100, border: img.featured ? `1px solid ${C.blue300}` : "none", color: img.featured ? C.blue700 : C.gray400, padding:"5px", borderRadius:5, fontSize:10, fontWeight:600 }}>
+                              {img.featured ? `⭐ ${t.admin.gal.featured}` : t.admin.gal.notFeatured}
+                            </button>
+                          </div>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button onClick={() => startEditGal(img)}
+                              style={{ flex:1, background: C.blue100, border:"none", color:C.blue700, padding:"5px", borderRadius:5, fontSize:11, fontWeight:500 }}>{t.admin.gal.edit}</button>
+                            <button onClick={() => toggleGalleryVisible(img)}
+                              style={{ flex:1, background: img.visible ? "#FEF2F2" : "#F0FFF4", border:"none", color: img.visible ? C.red : C.green, padding:"5px", borderRadius:5, fontSize:11, fontWeight:500 }}>
+                              {img.visible ? t.admin.gal.hide : t.admin.gal.show}
+                            </button>
+                            <button onClick={() => deleteGallery(img._id)}
+                              style={{ background:"#FEF2F2", border:"none", color:C.red, padding:"5px 8px", borderRadius:5, fontSize:11 }}>🗑</button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -978,7 +1024,7 @@ export default function App() {
           gallery={gallery} setGallery={setGallery}
           catalog={catalog} setCatalog={setCatalog}
           schedule={schedule} setSchedule={setSchedule}
-          onClose={exitAdmin} t={t} lang={lang}
+          onClose={exitAdmin} t={t} lang={lang} setLang={setLang}
           refreshData={loadData}
         />
       </>
