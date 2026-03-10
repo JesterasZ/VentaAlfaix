@@ -54,7 +54,7 @@ const T = {
     },
     admin: {
       title: "Panel Admin", subtitle: "Gestión del sitio",
-      passLabel: "Contraseña", passHint: "Contraseña: admin123", enter: "Acceder", wrongPass: "Contraseña incorrecta.",
+      passLabel: "Contraseña", passHint: "Introduce tu contraseña de administrador", enter: "Acceder", wrongPass: "Contraseña incorrecta.",
       tabs: { messages: "Mensajes", gallery: "Galería", schedule: "Horario", products: "Productos" },
       msg: {
         title: "Mensajes recibidos", visible: "visibles", unread: "sin leer", empty: "No hay mensajes aún.",
@@ -118,7 +118,7 @@ const T = {
     },
     admin: {
       title: "Admin Panel", subtitle: "Site management",
-      passLabel: "Password", passHint: "Password: admin123", enter: "Login", wrongPass: "Wrong password.",
+      passLabel: "Password", passHint: "Enter your admin password", enter: "Login", wrongPass: "Wrong password.",
       tabs: { messages: "Messages", gallery: "Gallery", schedule: "Schedule", products: "Products" },
       msg: {
         title: "Received messages", visible: "visible", unread: "unread", empty: "No messages yet.",
