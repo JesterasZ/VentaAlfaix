@@ -41,11 +41,11 @@ const T = {
     contact: {
       tag: "Escríbenos", title: "Contacto",
       sub: "¿Alguna consulta, sugerencia o encargo? Escríbenos y te responderemos lo antes posible.",
-      name: "Nombre *", email: "Email *", subject: "Asunto", message: "Mensaje *",
-      namePh: "Tu nombre", emailPh: "tu@email.com", subjectPh: "¿En qué podemos ayudarte?", messagePh: "Escribe tu mensaje...",
+      name: "Nombre *", phone: "Teléfono", subject: "Asunto", message: "Mensaje *",
+      namePh: "Tu nombre", phonePh: "+34 600 000 000", subjectPh: "¿En qué podemos ayudarte?", messagePh: "Escribe tu mensaje...",
       send: "Enviar mensaje", sending: "Enviando...",
       successTitle: "¡Mensaje enviado!", successText: "Te responderemos en breve. ¡Gracias!",
-      sendAnother: "Enviar otro mensaje", errRequired: "Por favor rellena todos los campos obligatorios.", errEmail: "El email no es válido.",
+      sendAnother: "Enviar otro mensaje", errRequired: "Por favor rellena todos los campos obligatorios.",
     },
     footer: {
       desc: "Tu supermercado de barrio con todo lo que necesitas al mejor precio.",
@@ -105,11 +105,11 @@ const T = {
     contact: {
       tag: "Write to us", title: "Contact",
       sub: "Any question, suggestion or order? Write to us and we'll get back to you as soon as possible.",
-      name: "Name *", email: "Email *", subject: "Subject", message: "Message *",
-      namePh: "Your name", emailPh: "you@email.com", subjectPh: "How can we help?", messagePh: "Write your message...",
+      name: "Name *", phone: "Phone", subject: "Subject", message: "Message *",
+      namePh: "Your name", phonePh: "+34 600 000 000", subjectPh: "How can we help?", messagePh: "Write your message...",
       send: "Send message", sending: "Sending...",
       successTitle: "Message sent!", successText: "We'll get back to you shortly. Thank you!",
-      sendAnother: "Send another message", errRequired: "Please fill in all required fields.", errEmail: "The email is not valid.",
+      sendAnother: "Send another message", errRequired: "Please fill in all required fields.",
     },
     footer: {
       desc: "Your neighbourhood shop with everything you need at the best price.",
@@ -485,14 +485,13 @@ function GalleryPage({ gallery, t, lang }) {
 
 /* ── CONTACTO ── */
 function ContactPage({ onSend, t }) {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", phone: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
   const [sending, setSending] = useState(false);
   const ch = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErr(""); };
   const send = async () => {
-    if (!form.name || !form.email || !form.message) { setErr(t.contact.errRequired); return; }
-    if (!/\S+@\S+\.\S+/.test(form.email)) { setErr(t.contact.errEmail); return; }
+    if (!form.name || !form.message) { setErr(t.contact.errRequired); return; }
     setSending(true);
     await onSend(form);
     setSending(false);
@@ -511,7 +510,7 @@ function ContactPage({ onSend, t }) {
           <div style={{ fontSize: 48, marginBottom: 10 }}>✅</div>
           <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, color: C.green, marginBottom: 8 }}>{t.contact.successTitle}</h3>
           <p style={{ color: C.gray600, fontSize: 14 }}>{t.contact.successText}</p>
-          <BtnOutline onClick={() => { setSent(false); setForm({ name:"",email:"",subject:"",message:"" }); }} style={{ marginTop: 20 }} color={C.green}>{t.contact.sendAnother}</BtnOutline>
+          <BtnOutline onClick={() => { setSent(false); setForm({ name:"",phone:"",subject:"",message:"" }); }} style={{ marginTop: 20 }} color={C.green}>{t.contact.sendAnother}</BtnOutline>
         </div>
       ) : (
         <div style={{ background: C.white, border: `1px solid ${C.gray200}`, borderRadius: 12, padding: 32, boxShadow: "0 4px 24px rgba(0,0,0,.05)" }}>
@@ -523,8 +522,8 @@ function ContactPage({ onSend, t }) {
                 <input value={form.name} onChange={e => ch("name", e.target.value)} placeholder={t.contact.namePh} />
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: C.gray600, letterSpacing: .5 }}>{t.contact.email}</span>
-                <input type="email" value={form.email} onChange={e => ch("email", e.target.value)} placeholder={t.contact.emailPh} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: C.gray600, letterSpacing: .5 }}>{t.contact.phone}</span>
+                <input type="tel" value={form.phone} onChange={e => ch("phone", e.target.value)} placeholder={t.contact.phonePh} />
               </label>
             </div>
             <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -771,7 +770,7 @@ function AdminPanel({ messages, setMessages, gallery, setGallery, catalog, setCa
                   <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 600, color: C.gray800, fontSize: 15 }}>{msg.name}</span>
-                      <span style={{ fontSize: 12, color: C.gray400 }}>{msg.email}</span>
+                      {msg.phone && <span style={{ fontSize: 12, color: C.gray400 }}>📞 {msg.phone}</span>}
                       {!msg.read && !msg.hidden && <span style={{ background: C.blue700, color: C.white, fontSize: 10, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>{t.admin.msg.new}</span>}
                       {msg.hidden && <span style={{ background: C.gray200, color: C.gray600, fontSize: 10, padding: "2px 8px", borderRadius: 10 }}>{t.admin.msg.hidden}</span>}
                     </div>
