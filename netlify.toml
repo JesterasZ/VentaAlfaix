@@ -1,17 +1,9 @@
 [build]
-  command = "npm run build"
+  command = "npm run build && cd netlify/functions && npm install"
   publish = "dist"
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
-
-# SPA: redirect all non-API, non-file routes to index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"]}
 
 [[redirects]]
   from = "/*"
