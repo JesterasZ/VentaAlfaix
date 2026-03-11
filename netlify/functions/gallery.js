@@ -10,6 +10,12 @@ export default async (req, context) => {
     return Response.json(images);
   }
 
+  if (req.method === "DELETE" && id) {
+    const image = await Gallery.findByIdAndDelete(id);
+    if (!image) return Response.json({ error: "Not found" }, { status: 404 });
+    return Response.json({ ok: true });
+  }
+
   const body = await req.json();
 
   if (req.method === "POST") {
@@ -21,12 +27,6 @@ export default async (req, context) => {
     const image = await Gallery.findByIdAndUpdate(id, body, { returnDocument: "after" });
     if (!image) return Response.json({ error: "Not found" }, { status: 404 });
     return Response.json(image);
-  }
-
-  if (req.method === "DELETE" && id) {
-    const image = await Gallery.findByIdAndDelete(id);
-    if (!image) return Response.json({ error: "Not found" }, { status: 404 });
-    return Response.json({ ok: true });
   }
 
   return Response.json({ error: "Method not allowed" }, { status: 405 });

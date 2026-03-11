@@ -10,6 +10,12 @@ export default async (req, context) => {
     return Response.json(messages);
   }
 
+  if (req.method === "DELETE" && id) {
+    const message = await Message.findByIdAndDelete(id);
+    if (!message) return Response.json({ error: "Not found" }, { status: 404 });
+    return Response.json({ ok: true });
+  }
+
   const body = await req.json();
 
   if (req.method === "POST") {
@@ -21,12 +27,6 @@ export default async (req, context) => {
     const message = await Message.findByIdAndUpdate(id, body, { returnDocument: "after" });
     if (!message) return Response.json({ error: "Not found" }, { status: 404 });
     return Response.json(message);
-  }
-
-  if (req.method === "DELETE" && id) {
-    const message = await Message.findByIdAndDelete(id);
-    if (!message) return Response.json({ error: "Not found" }, { status: 404 });
-    return Response.json({ ok: true });
   }
 
   return Response.json({ error: "Method not allowed" }, { status: 405 });
